@@ -1,0 +1,92 @@
+@import "tailwindcss";
+
+:root {
+  --background: #09090b;
+  --foreground: #fafafa;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans), system-ui, sans-serif;
+}
+
+@utility card {
+  border-radius: 0.75rem;
+  border: 1px solid var(--color-zinc-800);
+  background: color-mix(in oklab, var(--color-zinc-900) 60%, transparent);
+  backdrop-filter: blur(8px);
+  padding: 1.25rem;
+}
+
+@utility btn {
+  border-radius: 0.375rem;
+  padding: 0.375rem 0.75rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: background-color 150ms;
+}
+@utility btn-primary {
+  @apply btn;
+  background: var(--color-emerald-500);
+  color: var(--color-zinc-950);
+}
+@utility btn-primary {
+  &:hover { background: var(--color-emerald-400); }
+  &:disabled { opacity: 0.5; cursor: not-allowed; }
+}
+@utility btn-secondary {
+  @apply btn;
+  background: var(--color-zinc-800);
+  color: var(--color-zinc-100);
+}
+@utility btn-secondary {
+  &:hover { background: var(--color-zinc-700); }
+  &:disabled { opacity: 0.5; cursor: not-allowed; }
+}
+@utility btn-danger {
+  @apply btn;
+  background: var(--color-red-500);
+  color: var(--color-zinc-950);
+}
+@utility btn-danger {
+  &:hover { background: var(--color-red-400); }
+}
+
+@utility label {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--color-zinc-500);
+}
+
+@utility input {
+  width: 100%;
+  border-radius: 0.375rem;
+  border: 1px solid var(--color-zinc-800);
+  background: var(--color-zinc-950);
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+  color: var(--color-zinc-100);
+}
+@utility input {
+  &::placeholder { color: var(--color-zinc-600); }
+  &:focus { border-color: var(--color-emerald-500); outline: none; }
+}
+
+@utility chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  border-radius: 9999px;
+  padding: 0.125rem 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
