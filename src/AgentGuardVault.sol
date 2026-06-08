@@ -75,6 +75,15 @@ contract AgentGuardVault {
         "Decide whether the proposed action is safe to execute given the user's policy. "
         "Reply with exactly one word: APPROVE, REVIEW, or BLOCK.";
 
+    /// Somnia's `getRequestDeposit()` returns only the *operational* fee
+    /// (0.03 STT). The full deposit must also cover `pricePerAgent ×
+    /// subcommitteeSize`. Under-funded requests are silently dropped — the
+    /// platform marks them RequestNotFound and the callback never fires.
+    /// These budgets cover the default 3-validator subcommittee with margin;
+    /// excess is rebated back to the vault via `receive()`.
+    uint256 private constant INFERENCE_BUDGET = 0.25 ether; // LLM Inference: 0.03 base + 0.07×3 + margin
+    uint256 private constant PARSE_BUDGET = 0.35 ether;     // Parse Website: 0.03 base + 0.10×3 + margin
+
     ISomniaAgentPlatform public immutable platform;
     uint256 public immutable inferenceAgentId;
     uint256 public immutable parseAgentId;
@@ -273,8 +282,7 @@ contract AgentGuardVault {
             url,
             "Extract dApp identity, declared purpose, audit status, and any red flags as a concise paragraph."
         );
-        uint256 deposit_ = platform.getRequestDeposit();
-        reqId = platform.createRequest{value: deposit_}(
+        reqId = platform.createRequest{value: PARSE_BUDGET}(
             parseAgentId,
             address(this),
             this.handleResponse.selector,
@@ -303,8 +311,7 @@ contract AgentGuardVault {
             allowed
         );
 
-        uint256 deposit_ = platform.getRequestDeposit();
-        reqId = platform.createRequest{value: deposit_}(
+        reqId = platform.createRequest{value: INFERENCE_BUDGET}(
             inferenceAgentId,
             address(this),
             this.handleResponse.selector,
