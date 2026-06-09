@@ -2,7 +2,7 @@
 
 import { useAccount, useReadContract, useWriteContract, useWaitForTransactionReceipt } from "wagmi";
 import { formatEther, isAddress, parseEther, type Address } from "viem";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { AgentGuardVaultAbi, VAULT_ADDRESS } from "@/lib/contract";
 
 type Policy = {
@@ -93,9 +93,11 @@ function PolicyForm({ onDone }: { onDone: () => void }) {
     query: { enabled: Boolean(hash) },
   });
 
-  if (isSuccess) {
-    setTimeout(onDone, 200);
-  }
+  useEffect(() => {
+    if (!isSuccess) return;
+    const t = setTimeout(onDone, 200);
+    return () => clearTimeout(t);
+  }, [isSuccess, onDone]);
 
   const allowedAddrs = allowed
     .split(/[\s,]+/)

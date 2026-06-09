@@ -127,6 +127,8 @@ contract AgentGuardVault {
     event ActionDecided(uint256 indexed actionId, Decision decision, uint8 score, string explanation);
     event ActionExecuted(uint256 indexed actionId, bool success, bytes returnData);
     event ActionCancelled(uint256 indexed actionId);
+    event ReviewFailed(uint256 indexed actionId, ResponseStatus status);
+    event ReviewFunded(uint256 indexed actionId, address indexed payer, uint256 amount);
 
     error NotPlatform();
     error NotOwner();
@@ -139,6 +141,9 @@ contract AgentGuardVault {
     error ReviewTimelockPending(uint256 readyAt);
     error ConsensusFailed(ResponseStatus status);
     error MalformedResult();
+    error ExceedsMaxSpend(uint256 value, uint256 maxSpend);
+    error ExceedsMaxRatio(uint256 value, uint256 cap);
+    error ExecutionFailed(bytes returnData);
 
     modifier onlyPlatform() {
         if (msg.sender != address(platform)) revert NotPlatform();
@@ -218,10 +223,26 @@ contract AgentGuardVault {
     /// Funds and dispatches the agent review. If evidenceUrl is set, the
     /// Parse-Website agent runs first; its callback then fires the LLM
     /// Inference agent with the parsed dApp metadata appended to the prompt.
+    ///
+    /// Agent fees are charged to the owner's vault balance (see `_dispatch*`),
+    /// never to the shared contract pool — so `sum(balances) <=
+    /// address(this).balance` always holds and depositors stay solvent. Any
+    /// `msg.value` is credited to the owner's balance as a top-up first, so a
+    /// caller can fund the review and the action in one transaction. Only the
+    /// owner or their authorized agent may trigger a review (it spends the
+    /// owner's funds), which closes the griefing vector where anyone could
+    /// drain the vault by firing reviews on someone else's actions.
     function requestAgentReview(uint256 actionId) external payable {
         Action storage a = actions[actionId];
         if (a.owner == address(0)) revert UnknownAction();
+        Policy storage p = policies[a.owner];
+        if (msg.sender != a.owner && msg.sender != p.agent) revert NotAgent();
         if (a.stage != ActionStage.Proposed) revert WrongStage(a.stage);
+
+        if (msg.value > 0) {
+            balances[a.owner] += msg.value;
+            emit ReviewFunded(actionId, msg.sender, msg.value);
+        }
 
         if (bytes(a.evidenceUrl).length > 0) {
             uint256 reqId = _dispatchParse(actionId, a.evidenceUrl);
@@ -253,11 +274,29 @@ contract AgentGuardVault {
             uint256 readyAt = a.decidedAt + policies[a.owner].reviewTimelock;
             if (block.timestamp < readyAt) revert ReviewTimelockPending(readyAt);
         }
+
+        // Deterministic guardrails the LLM verdict cannot override. The
+        // target allowlist is intentionally NOT a hard gate here — interacting
+        // with a non-allowlisted target is exactly what the REVIEW timelock is
+        // for — but absolute value caps always hold, so a model lapse or a
+        // prompt-injected evidence page can never move more than the owner's
+        // policy permits.
+        Policy storage p = policies[a.owner];
+        if (p.maxSpend > 0 && a.value > p.maxSpend) revert ExceedsMaxSpend(a.value, p.maxSpend);
+        if (p.maxRatioBps > 0) {
+            uint256 cap = (balances[a.owner] * p.maxRatioBps) / 10_000;
+            if (a.value > cap) revert ExceedsMaxRatio(a.value, cap);
+        }
+
         if (balances[a.owner] < a.value) revert InsufficientBalance();
 
         balances[a.owner] -= a.value;
         a.stage = ActionStage.Executed;
         (ok, ret) = a.target.call{value: a.value}(a.data);
+        // Fail closed: if the call reverts, roll back the whole execution
+        // (balance debit + stage change) so funds aren't silently consumed and
+        // the owner can retry. `.call` returns the value to us on failure.
+        if (!ok) revert ExecutionFailed(ret);
         emit ActionExecuted(actionId, ok, ret);
     }
 
@@ -273,7 +312,17 @@ contract AgentGuardVault {
         if (actionId == 0) revert UnknownAction();
         Action storage a = actions[actionId];
 
-        if (status != ResponseStatus.Success) revert ConsensusFailed(status);
+        // Fail safe instead of reverting: a reverting callback leaves the
+        // action permanently stuck in *Pending (the platform considers the
+        // callback delivered either way). Return it to Proposed so the owner
+        // can retry — never auto-approve on a failed or timed-out review.
+        if (status != ResponseStatus.Success) {
+            a.stage = ActionStage.Proposed;
+            a.parseRequestId = 0;
+            a.inferenceRequestId = 0;
+            emit ReviewFailed(actionId, status);
+            return;
+        }
         bytes memory result = _pickConsensusResult(responses);
         RequestKind kind = requestKind[requestId];
 
@@ -302,6 +351,12 @@ contract AgentGuardVault {
     // --- internals --------------------------------------------------------
 
     function _dispatchParse(uint256 actionId, string memory url) internal returns (uint256 reqId) {
+        // Charge the agent fee to the owner's vault balance so the spend is
+        // always backed by accounted funds (keeps the vault solvent).
+        address owner = actions[actionId].owner;
+        if (balances[owner] < PARSE_BUDGET) revert InsufficientBalance();
+        balances[owner] -= PARSE_BUDGET;
+
         // ExtractString is built for narrow single-field extractions constrained
         // by an `options` enum — that's how the agent reaches high confidence.
         // We extract one safety signal (audit status) and let the LLM Inference
@@ -337,6 +392,10 @@ contract AgentGuardVault {
         internal
         returns (uint256 reqId)
     {
+        // Charge the agent fee to the owner's vault balance (solvency invariant).
+        if (balances[a.owner] < INFERENCE_BUDGET) revert InsufficientBalance();
+        balances[a.owner] -= INFERENCE_BUDGET;
+
         Policy storage p = policies[a.owner];
         string memory prompt = _buildPolicyPrompt(a, p, parsedEvidence);
 
@@ -399,25 +458,31 @@ contract AgentGuardVault {
         return Decision.None;
     }
 
+    /// Returns the result agreed on by a strict majority of the subcommittee.
+    /// Only `Success` responses are counted, and the winning result must be
+    /// held by more than half of all responses — otherwise there's no
+    /// consensus and we revert rather than act on a plurality of one.
     function _pickConsensusResult(Response[] memory responses) internal pure returns (bytes memory) {
-        require(responses.length > 0, "no responses");
-        bytes32 winnerHash;
+        uint256 n = responses.length;
+        require(n > 0, "no responses");
+        bytes memory winner;
         uint256 winnerCount;
-        uint256 winnerIdx;
-        for (uint256 i = 0; i < responses.length; i++) {
+        for (uint256 i = 0; i < n; i++) {
+            if (responses[i].status != ResponseStatus.Success) continue;
             bytes32 h = keccak256(responses[i].result);
-            uint256 count = 1;
-            for (uint256 j = 0; j < responses.length; j++) {
-                if (i == j) continue;
-                if (keccak256(responses[j].result) == h) count++;
+            uint256 count;
+            for (uint256 j = 0; j < n; j++) {
+                if (responses[j].status == ResponseStatus.Success && keccak256(responses[j].result) == h) {
+                    count++;
+                }
             }
             if (count > winnerCount) {
                 winnerCount = count;
-                winnerHash = h;
-                winnerIdx = i;
+                winner = responses[i].result;
             }
         }
-        return responses[winnerIdx].result;
+        if (winnerCount * 2 <= n) revert ConsensusFailed(ResponseStatus.Failed);
+        return winner;
     }
 
     // --- string helpers (minimal, avoids extra dep) -----------------------

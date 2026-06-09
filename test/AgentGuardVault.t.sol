@@ -108,6 +108,7 @@ contract AgentGuardVaultTest is Test {
         vm.prank(agent);
         uint256 actionId = vault.proposeAction(user, recipient, 10 ether, "", "pay invoice", "");
 
+        vm.prank(user);
         vault.requestAgentReview{value: 1 ether}(actionId);
 
         platform.deliver(1, abi.encode("APPROVE"), ResponseStatus.Success);
@@ -125,6 +126,7 @@ contract AgentGuardVaultTest is Test {
         vm.prank(agent);
         uint256 actionId = vault.proposeAction(user, drainer, 45 ether, "", "withdraw", "");
 
+        vm.prank(user);
         vault.requestAgentReview{value: 1 ether}(actionId);
 
         platform.deliver(1, abi.encode("BLOCK"), ResponseStatus.Success);
@@ -145,6 +147,7 @@ contract AgentGuardVaultTest is Test {
             user, unknownDapp, 1 ether, hex"deadbeef", "swap on unknown dex", "https://unknown.fi"
         );
 
+        vm.prank(user);
         vault.requestAgentReview{value: 1 ether}(actionId);
 
         platform.deliver(1, abi.encode("Unknown DEX, no audit, deployed 2 days ago."), ResponseStatus.Success);
@@ -174,6 +177,7 @@ contract AgentGuardVaultTest is Test {
         uint256 actionId = vault.proposeAction(
             user, unknownDapp, 1 ether, "", "interact with new dapp", "https://unknown.fi"
         );
+        vm.prank(user);
         vault.requestAgentReview{value: 1 ether}(actionId);
 
         platform.deliver(1, abi.encode("Unverified dApp."), ResponseStatus.Success);
@@ -195,6 +199,7 @@ contract AgentGuardVaultTest is Test {
         uint256 actionId = vault.proposeAction(
             user, recipient, 1 ether, "", "ambiguous", "https://x.test"
         );
+        vm.prank(user);
         vault.requestAgentReview{value: 1 ether}(actionId);
         platform.deliver(1, abi.encode("noisy"), ResponseStatus.Success);
         platform.deliver(2, abi.encode("REVIEW"), ResponseStatus.Success);
@@ -218,6 +223,7 @@ contract AgentGuardVaultTest is Test {
 
         vm.prank(agent);
         uint256 actionId = vault.proposeAction(user, drainer, 45 ether, "", "drain", "");
+        vm.prank(user);
         vault.requestAgentReview{value: 1 ether}(actionId);
         platform.deliver(1, abi.encode("BLOCK"), ResponseStatus.Success);
 
@@ -236,5 +242,95 @@ contract AgentGuardVaultTest is Test {
         Request memory details;
         vm.expectRevert(AgentGuardVault.NotPlatform.selector);
         vault.handleResponse(1, empty, ResponseStatus.Success, details);
+    }
+
+    // --- new invariants ---------------------------------------------------
+
+    /// Only the owner or their authorized agent may trigger a review — a
+    /// stranger can't fire reviews on someone else's action to drain the vault.
+    function test_requestReview_rejectsStranger() public {
+        _setupVault();
+        vm.prank(agent);
+        uint256 actionId = vault.proposeAction(user, recipient, 10 ether, "", "pay", "");
+
+        address stranger = makeAddr("stranger");
+        vm.deal(stranger, 10 ether);
+        vm.prank(stranger);
+        vm.expectRevert(AgentGuardVault.NotAgent.selector);
+        vault.requestAgentReview{value: 1 ether}(actionId);
+    }
+
+    /// Agent fees are debited from the owner's vault balance, so the sum of
+    /// all balances never exceeds the contract's actual ETH — the vault stays
+    /// solvent and every depositor can withdraw what they're owed.
+    function test_reviewFees_keepVaultSolvent() public {
+        _setupVault(); // user deposits 50 ether
+
+        vm.prank(agent);
+        uint256 actionId = vault.proposeAction(
+            user, recipient, 1 ether, "", "swap", "https://x.test"
+        );
+
+        // No extra msg.value: the parse + inference budgets come straight out
+        // of the owner's accounted balance.
+        vm.prank(user);
+        vault.requestAgentReview(actionId);
+        platform.deliver(1, abi.encode("noisy"), ResponseStatus.Success); // parse -> inference
+        platform.deliver(2, abi.encode("APPROVE"), ResponseStatus.Success);
+
+        // 50 ether deposit minus the 0.35 parse + 0.21 inference fees (mock
+        // charges its depositPerRequest = 0.21 for the value sent).
+        uint256 owed = vault.balances(user);
+        assertEq(owed, 50 ether - 0.35 ether - 0.25 ether);
+        assertLe(owed, address(vault).balance); // solvency invariant
+    }
+
+    /// maxSpend is a hard on-chain cap the LLM verdict cannot override: even an
+    /// APPROVE can't move more than the policy allows.
+    function test_maxSpend_hardCapsEvenOnApprove() public {
+        _setupVault(); // maxSpend = 50 ether
+
+        // Lower the cap to 5 ether, then try to push 10 ether through with an
+        // APPROVE verdict.
+        address[] memory allowed = new address[](1);
+        allowed[0] = recipient;
+        string[] memory blocked = new string[](0);
+        vm.prank(user);
+        vault.createPolicy(agent, 5 ether, 0, REVIEW_TIMELOCK, allowed, blocked);
+
+        vm.prank(agent);
+        uint256 actionId = vault.proposeAction(user, recipient, 10 ether, "", "pay", "");
+        vm.prank(user);
+        vault.requestAgentReview{value: 1 ether}(actionId);
+        platform.deliver(1, abi.encode("APPROVE"), ResponseStatus.Success);
+
+        vm.expectRevert(
+            abi.encodeWithSelector(AgentGuardVault.ExceedsMaxSpend.selector, 10 ether, 5 ether)
+        );
+        vm.prank(user);
+        vault.executeAction(actionId);
+    }
+
+    /// A failed/timed-out review returns the action to Proposed so the owner
+    /// can retry — it doesn't strand the action or auto-approve it.
+    function test_failedReview_returnsToProposed() public {
+        _setupVault();
+
+        vm.prank(agent);
+        uint256 actionId = vault.proposeAction(user, recipient, 1 ether, "", "pay", "");
+        vm.prank(user);
+        vault.requestAgentReview{value: 1 ether}(actionId);
+
+        platform.deliver(1, abi.encode(""), ResponseStatus.Failed);
+
+        AgentGuardVault.Action memory a = vault.getAction(actionId);
+        assertEq(uint8(a.stage), uint8(AgentGuardVault.ActionStage.Proposed));
+        assertEq(uint8(a.decision), uint8(AgentGuardVault.Decision.None));
+
+        // owner can retry
+        vm.prank(user);
+        vault.requestAgentReview(actionId);
+        a = vault.getAction(actionId);
+        assertEq(uint8(a.stage), uint8(AgentGuardVault.ActionStage.InferencePending));
     }
 }
