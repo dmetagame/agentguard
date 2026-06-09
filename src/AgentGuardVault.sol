@@ -315,7 +315,7 @@ contract AgentGuardVault {
             url,
             true,         // resolveUrl — let the agent search if the URL isn't direct
             uint8(3),     // numPages
-            uint8(60)     // confidenceThreshold
+            uint8(20)     // confidenceThreshold — permissive so partial extractions still feed Inference
         );
         reqId = platform.createRequest{value: PARSE_BUDGET}(
             parseAgentId,
