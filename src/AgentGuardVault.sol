@@ -302,20 +302,26 @@ contract AgentGuardVault {
     // --- internals --------------------------------------------------------
 
     function _dispatchParse(uint256 actionId, string memory url) internal returns (uint256 reqId) {
-        // ExtractString(key, description, options, prompt, url, resolveUrl, numPages, confidenceThreshold)
-        // — the Parse-Website agent's only callable entrypoint. Missing selector or
-        // missing args ⇒ validators reject at decode, Finalized(Failed) within seconds.
-        string[] memory options = new string[](0);
+        // ExtractString is built for narrow single-field extractions constrained
+        // by an `options` enum — that's how the agent reaches high confidence.
+        // We extract one safety signal (audit status) and let the LLM Inference
+        // agent weigh it against the rest of the action. Production deployments
+        // would chain multiple extractions for richer evidence.
+        string[] memory options = new string[](3);
+        options[0] = "audited";
+        options[1] = "unaudited";
+        options[2] = "unknown";
         bytes memory payload = abi.encodeWithSelector(
             IParseWebsiteAgent.ExtractString.selector,
-            "dapp_evidence",
-            "Identity, declared purpose, audit status, and red flags of the dApp at the given URL.",
+            "audit_status",
+            "Whether the protocol described on this page has been formally audited by a security firm.",
             options,
-            "Extract dApp identity, declared purpose, audit status, and any red flags as a concise paragraph.",
+            "Has the protocol or dApp described on this page been audited by a security firm? "
+            "Reply 'audited' if yes, 'unaudited' if explicitly not, or 'unknown' if not stated.",
             url,
-            true,         // resolveUrl — let the agent search if the URL isn't direct
-            uint8(3),     // numPages
-            uint8(20)     // confidenceThreshold — permissive so partial extractions still feed Inference
+            false,        // resolveUrl — scrape the given URL directly (callers pass real URLs)
+            uint8(1),     // numPages — capped at 1 when resolveUrl=false
+            uint8(20)     // confidenceThreshold
         );
         reqId = platform.createRequest{value: PARSE_BUDGET}(
             parseAgentId,
