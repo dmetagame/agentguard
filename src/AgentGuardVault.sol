@@ -22,6 +22,23 @@ interface ILLMAgent {
     ) external returns (string memory);
 }
 
+/// Parse-Website agent extracts a structured field from a fetched web page.
+/// The selector + 8-arg shape is the agent's only callable entrypoint —
+/// raw `abi.encode(url, prompt)` is rejected by validators at decode time
+/// (RequestFinalized with status=Failed within seconds of creation).
+interface IParseWebsiteAgent {
+    function ExtractString(
+        string memory key,
+        string memory description,
+        string[] calldata options,
+        string memory prompt,
+        string memory url,
+        bool resolveUrl,
+        uint8 numPages,
+        uint8 confidenceThreshold
+    ) external returns (string memory);
+}
+
 /// AgentGuardVault — programmable safety layer for autonomous AI wallets.
 /// Every action proposed by a user's agent is reviewed by Somnia Agents
 /// (LLM Inference + optional Parse-Website) before the vault executes it.
@@ -285,11 +302,20 @@ contract AgentGuardVault {
     // --- internals --------------------------------------------------------
 
     function _dispatchParse(uint256 actionId, string memory url) internal returns (uint256 reqId) {
-        // The Parse-Website agent currently exposes a string-returning entrypoint;
-        // we send the URL + an extraction instruction and decode `(string)` on callback.
-        bytes memory payload = abi.encode(
+        // ExtractString(key, description, options, prompt, url, resolveUrl, numPages, confidenceThreshold)
+        // — the Parse-Website agent's only callable entrypoint. Missing selector or
+        // missing args ⇒ validators reject at decode, Finalized(Failed) within seconds.
+        string[] memory options = new string[](0);
+        bytes memory payload = abi.encodeWithSelector(
+            IParseWebsiteAgent.ExtractString.selector,
+            "dapp_evidence",
+            "Identity, declared purpose, audit status, and red flags of the dApp at the given URL.",
+            options,
+            "Extract dApp identity, declared purpose, audit status, and any red flags as a concise paragraph.",
             url,
-            "Extract dApp identity, declared purpose, audit status, and any red flags as a concise paragraph."
+            true,         // resolveUrl — let the agent search if the URL isn't direct
+            uint8(3),     // numPages
+            uint8(60)     // confidenceThreshold
         );
         reqId = platform.createRequest{value: PARSE_BUDGET}(
             parseAgentId,
