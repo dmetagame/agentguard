@@ -18,7 +18,7 @@ struct Response {
     address validator;
     bytes result;
     ResponseStatus status;
-    bytes receipt;
+    uint256 receipt;
     uint256 timestamp;
     uint256 executionCost;
 }
@@ -26,17 +26,19 @@ struct Response {
 struct Request {
     uint256 id;
     address requester;
-    uint256 agentId;
     address callbackAddress;
     bytes4 callbackSelector;
-    bytes payload;
     address[] subcommittee;
     Response[] responses;
+    uint256 responseCount;
+    uint256 failureCount;
+    uint256 threshold;
+    uint256 createdAt;
+    uint256 deadline;
     ResponseStatus status;
     ConsensusType consensusType;
-    uint256 threshold;
-    uint256 timeout;
-    uint256 deposit;
+    uint256 remainingBudget;
+    uint256 perAgentBudget;
 }
 
 interface ISomniaAgentPlatform {
@@ -59,6 +61,8 @@ interface ISomniaAgentPlatform {
     ) external payable returns (uint256 requestId);
 
     function getRequest(uint256 requestId) external view returns (Request memory);
+
+    function hasRequest(uint256 requestId) external view returns (bool);
 
     function getRequestDeposit() external view returns (uint256);
 

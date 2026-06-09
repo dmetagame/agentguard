@@ -42,6 +42,12 @@ contract AgentGuardVault {
         Cancelled
     }
 
+    enum RequestKind {
+        None,
+        Parse,
+        Inference
+    }
+
     struct Policy {
         address agent;
         uint256 maxSpend;
@@ -93,6 +99,7 @@ contract AgentGuardVault {
     mapping(address => uint256) public balances;
     mapping(uint256 => Action) public actions;
     mapping(uint256 => uint256) public requestToAction;
+    mapping(uint256 => RequestKind) public requestKind;
 
     event PolicyCreated(address indexed owner, address indexed agent, uint256 maxSpend);
     event Deposited(address indexed owner, uint256 amount);
@@ -251,15 +258,16 @@ contract AgentGuardVault {
 
         if (status != ResponseStatus.Success) revert ConsensusFailed(status);
         bytes memory result = _pickConsensusResult(responses);
+        RequestKind kind = requestKind[requestId];
 
-        if (details.agentId == parseAgentId) {
+        if (kind == RequestKind.Parse) {
             string memory parsed = abi.decode(result, (string));
             a.parsedEvidence = parsed;
             uint256 nextId = _dispatchInference(actionId, a, parsed);
             a.inferenceRequestId = nextId;
             a.stage = ActionStage.InferencePending;
             emit InferenceRequested(actionId, nextId);
-        } else if (details.agentId == inferenceAgentId) {
+        } else if (kind == RequestKind.Inference) {
             string memory verdict = abi.decode(result, (string));
             Decision dec = _parseVerdict(verdict);
             if (dec == Decision.None) revert MalformedResult();
@@ -271,6 +279,7 @@ contract AgentGuardVault {
         } else {
             revert MalformedResult();
         }
+        details; // silence unused-parameter warning
     }
 
     // --- internals --------------------------------------------------------
@@ -289,6 +298,7 @@ contract AgentGuardVault {
             payload
         );
         requestToAction[reqId] = actionId;
+        requestKind[reqId] = RequestKind.Parse;
     }
 
     function _dispatchInference(uint256 actionId, Action storage a, string memory parsedEvidence)
@@ -318,6 +328,7 @@ contract AgentGuardVault {
             payload
         );
         requestToAction[reqId] = actionId;
+        requestKind[reqId] = RequestKind.Inference;
     }
 
     function _buildPolicyPrompt(Action storage a, Policy storage p, string memory parsedEvidence)

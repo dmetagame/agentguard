@@ -17,19 +17,21 @@ contract MockPlatform is ISomniaAgentPlatform {
     uint256 public depositPerRequest = 0.21 ether;
 
     function createRequest(
-        uint256 agentId,
+        uint256, /*agentId*/
         address callbackAddress,
         bytes4 callbackSelector,
-        bytes calldata payload
+        bytes calldata /*payload*/
     ) external payable returns (uint256 reqId) {
         reqId = nextRequestId++;
         Request storage r = _requests[reqId];
         r.id = reqId;
         r.requester = msg.sender;
-        r.agentId = agentId;
         r.callbackAddress = callbackAddress;
         r.callbackSelector = callbackSelector;
-        r.payload = payload;
+    }
+
+    function hasRequest(uint256 id) external view returns (bool) {
+        return _requests[id].id != 0;
     }
 
     function createAdvancedRequest(
@@ -58,7 +60,7 @@ contract MockPlatform is ISomniaAgentPlatform {
                 validator: address(uint160(i + 1)),
                 result: result,
                 status: status,
-                receipt: "",
+                receipt: 0,
                 timestamp: block.timestamp,
                 executionCost: 0
             });
