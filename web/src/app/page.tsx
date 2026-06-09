@@ -1,65 +1,70 @@
-import Image from "next/image";
+"use client";
+
+import { useAccount } from "wagmi";
+import { Header } from "@/components/Header";
+import { VaultBalance } from "@/components/VaultBalance";
+import { PolicyCard } from "@/components/PolicyCard";
+import { ProposeActionForm } from "@/components/ProposeActionForm";
+import { ActionsList } from "@/components/ActionsList";
+import { EventLog } from "@/components/EventLog";
+import { VAULT_ADDRESS } from "@/lib/contract";
 
 export default function Home() {
+  const { isConnected } = useAccount();
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
+    <>
+      <Header />
+      <main className="mx-auto w-full max-w-6xl flex-1 px-6 py-10">
+        <section className="mb-10">
+          <h1 className="text-3xl font-semibold tracking-tight">
+            Onchain firewall for AI agents
           </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+          <p className="mt-2 max-w-2xl text-sm leading-6 text-zinc-400">
+            Every action proposed by an autonomous agent is reviewed by Somnia
+            Agents (LLM Inference + optional Parse-Website) before the vault
+            will execute it. Verdicts are <span className="text-emerald-400">APPROVE</span>,{" "}
+            <span className="text-amber-400">REVIEW</span> (24h timelock), or{" "}
+            <span className="text-rose-400">BLOCK</span>.
           </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
+          <div className="mt-3 text-xs text-zinc-500">
+            Vault: <span className="font-mono">{VAULT_ADDRESS}</span> · Somnia Testnet (chainId 50312)
+          </div>
+        </section>
+
+        {!isConnected ? (
+          <div className="rounded-xl border border-zinc-800 bg-zinc-900/40 p-8 text-center">
+            <p className="text-sm text-zinc-300">
+              Connect a wallet on Somnia Testnet to view the vault, policies, and review actions.
+            </p>
+          </div>
+        ) : (
+          <div className="grid gap-6 lg:grid-cols-3">
+            <div className="space-y-6 lg:col-span-2">
+              <ActionsList />
+              <ProposeActionForm />
+            </div>
+            <div className="space-y-6">
+              <VaultBalance />
+              <PolicyCard />
+              <EventLog />
+            </div>
+          </div>
+        )}
       </main>
-    </div>
+      <footer className="border-t border-zinc-800 bg-zinc-950/60">
+        <div className="mx-auto max-w-6xl px-6 py-4 text-[11px] text-zinc-500">
+          AgentGuard · built for the Somnia Agentathon · source on{" "}
+          <a
+            href="https://github.com/dmetagame/agentguard"
+            className="text-zinc-300 hover:text-emerald-400"
+            target="_blank"
+            rel="noreferrer"
+          >
+            github.com/dmetagame/agentguard
+          </a>
+        </div>
+      </footer>
+    </>
   );
 }
