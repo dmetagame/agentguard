@@ -1,6 +1,6 @@
 "use client";
 
-import { useAccount, useReadContract, useWriteContract, useWaitForTransactionReceipt } from "wagmi";
+import { useAccount, useWriteContract, useWaitForTransactionReceipt } from "wagmi";
 import { isAddress, parseEther, parseEventLogs, type Address, type Hex } from "viem";
 import { useState } from "react";
 import { AgentGuardVaultAbi, VAULT_ADDRESS } from "@/lib/contract";

@@ -7,6 +7,7 @@ import { PolicyCard } from "@/components/PolicyCard";
 import { ProposeActionForm } from "@/components/ProposeActionForm";
 import { ActionsList } from "@/components/ActionsList";
 import { EventLog } from "@/components/EventLog";
+import { PublicProofs } from "@/components/PublicProofs";
 import { VAULT_ADDRESS } from "@/lib/contract";
 
 export default function Home() {
@@ -32,10 +33,12 @@ export default function Home() {
           </div>
         </section>
 
+        <PublicProofs />
+
         {!isConnected ? (
           <div className="rounded-xl border border-zinc-800 bg-zinc-900/40 p-8 text-center">
             <p className="text-sm text-zinc-300">
-              Connect a wallet on Somnia Testnet to view the vault, policies, and review actions.
+              Connect a wallet on Somnia Testnet to manage your vault, set a policy, and propose &amp; review actions.
             </p>
           </div>
         ) : (
