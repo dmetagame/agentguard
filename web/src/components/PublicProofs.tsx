@@ -79,7 +79,7 @@ export function PublicProofs() {
           href={`${EXPLORER}/address/${VAULT_ADDRESS}`}
           target="_blank"
           rel="noreferrer"
-          className="text-xs text-zinc-500 underline hover:text-emerald-400"
+          className="text-xs text-zinc-500 underline hover:text-accent"
         >
           vault on explorer ↗
         </a>
@@ -108,18 +108,18 @@ function ProofCard({ proof }: { proof: Proof }) {
 
   const tone =
     proof.expect === "Approve"
-      ? "border-emerald-700 bg-emerald-500/5"
+      ? "border-approve/50 bg-approve/5"
       : proof.expect === "Block"
-      ? "border-red-800 bg-red-500/5"
-      : "border-amber-800 bg-amber-500/5";
+      ? "border-block/60 bg-block/5"
+      : "border-review/60 bg-review/5";
 
   const chip =
     decision === "Approve"
-      ? "text-emerald-300 border-emerald-700"
+      ? "text-approve border-approve/50"
       : decision === "Block"
-      ? "text-red-300 border-red-800"
+      ? "text-block border-block/60"
       : decision === "Review"
-      ? "text-amber-300 border-amber-800"
+      ? "text-review border-review/60"
       : "text-zinc-400 border-zinc-700";
 
   return (
@@ -133,7 +133,7 @@ function ProofCard({ proof }: { proof: Proof }) {
       <div className="mt-3 flex items-center gap-2">
         <span className={`chip border ${chip}`}>{decision ?? "—"}</span>
         <span className="chip border border-zinc-700 bg-zinc-800/60 text-zinc-300">{stage ?? "…"}</span>
-        {settled && <span className="text-[11px] text-emerald-400">✓ on-chain</span>}
+        {settled && <span className="text-[11px] text-approve">✓ on-chain</span>}
       </div>
 
       {action && (
@@ -158,7 +158,7 @@ function ProofCard({ proof }: { proof: Proof }) {
               href={`${EXPLORER}/tx/${t.hash}`}
               target="_blank"
               rel="noreferrer"
-              className="text-zinc-400 underline hover:text-emerald-400"
+              className="text-zinc-400 underline hover:text-accent"
             >
               {t.label} ↗
             </a>

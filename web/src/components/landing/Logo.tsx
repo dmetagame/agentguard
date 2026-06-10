@@ -12,7 +12,7 @@ type LogoProps = {
  */
 export default function Logo({
   size = 24,
-  accent = "#7C5CFF",
+  accent = "#D7FF3E",
   className,
 }: LogoProps) {
   return (

@@ -6,7 +6,7 @@
   --color-hairline: #232837;
   --color-ink: #eceef4;
   --color-muted: #8b93a5;
-  --color-accent: #7c5cff;
+  --color-accent: #d7ff3e;
   --color-approve: #22c787;
   --color-review: #f5a623;
   --color-block: #ff5d5d;
@@ -71,7 +71,7 @@
   }
 
   ::selection {
-    background: rgb(124 92 255 / 0.22);
+    background: rgb(215 255 62 / 0.22);
     color: #eceef4;
   }
 
@@ -110,66 +110,82 @@
 /* ── dapp (/app) utilities ─────────────────────────────────────────── */
 
 @utility card {
-  border-radius: 0.75rem;
-  border: 1px solid var(--color-zinc-800);
-  background: color-mix(in oklab, var(--color-zinc-900) 60%, transparent);
+  border-radius: 1rem;
+  border: 1px solid var(--color-hairline);
+  background: color-mix(in oklab, var(--color-surface) 80%, transparent);
   backdrop-filter: blur(8px);
   padding: 1.25rem;
+  transition: border-color 200ms, box-shadow 200ms;
+}
+@utility card {
+  &:hover {
+    border-color: color-mix(in oklab, var(--color-accent) 30%, var(--color-hairline));
+    box-shadow: 0 0 28px -10px rgb(215 255 62 / 0.18);
+  }
 }
 
 @utility btn {
-  border-radius: 0.375rem;
-  padding: 0.375rem 0.75rem;
+  border-radius: 9999px;
+  padding: 0.375rem 0.875rem;
   font-size: 0.875rem;
   font-weight: 500;
-  transition: background-color 150ms;
+  transition: background-color 150ms, box-shadow 150ms;
 }
 @utility btn-primary {
   @apply btn;
-  background: var(--color-emerald-500);
-  color: var(--color-zinc-950);
+  background: var(--color-accent);
+  color: #0b0d12;
+  font-weight: 600;
+  box-shadow: 0 0 20px -6px rgb(215 255 62 / 0.45);
 }
 @utility btn-primary {
-  &:hover { background: var(--color-emerald-400); }
+  &:hover { background: #e6ff70; box-shadow: 0 0 26px -6px rgb(215 255 62 / 0.6); }
   &:disabled { opacity: 0.5; cursor: not-allowed; }
 }
 @utility btn-secondary {
   @apply btn;
-  background: var(--color-zinc-800);
-  color: var(--color-zinc-100);
+  border: 1px solid var(--color-hairline);
+  background: var(--color-surface);
+  color: var(--color-ink);
 }
 @utility btn-secondary {
-  &:hover { background: var(--color-zinc-700); }
+  &:hover { border-color: color-mix(in oklab, var(--color-accent) 40%, var(--color-hairline)); }
   &:disabled { opacity: 0.5; cursor: not-allowed; }
 }
 @utility btn-danger {
   @apply btn;
-  background: var(--color-red-500);
-  color: var(--color-zinc-950);
+  background: var(--color-block);
+  color: #0b0d12;
 }
 @utility btn-danger {
-  &:hover { background: var(--color-red-400); }
+  &:hover { background: color-mix(in oklab, var(--color-block) 85%, white); }
 }
 
 @utility label {
-  font-size: 0.75rem;
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
   text-transform: uppercase;
-  letter-spacing: 0.1em;
-  color: var(--color-zinc-500);
+  letter-spacing: 0.14em;
+  color: var(--color-muted);
 }
 
 @utility input {
   width: 100%;
-  border-radius: 0.375rem;
-  border: 1px solid var(--color-zinc-800);
-  background: var(--color-zinc-950);
+  border-radius: 0.625rem;
+  border: 1px solid var(--color-hairline);
+  background: #0b0d12;
   padding: 0.5rem 0.75rem;
   font-size: 0.875rem;
-  color: var(--color-zinc-100);
+  font-family: var(--font-mono);
+  color: var(--color-ink);
 }
 @utility input {
-  &::placeholder { color: var(--color-zinc-600); }
-  &:focus { border-color: var(--color-emerald-500); outline: none; }
+  &::placeholder { color: color-mix(in oklab, var(--color-muted) 60%, transparent); }
+  &:focus {
+    border-color: color-mix(in oklab, var(--color-accent) 60%, var(--color-hairline));
+    outline: none;
+    box-shadow: 0 0 0 3px rgb(215 255 62 / 0.12);
+  }
 }
 
 @utility chip {
@@ -178,6 +194,7 @@
   gap: 0.25rem;
   border-radius: 9999px;
   padding: 0.125rem 0.5rem;
-  font-size: 0.75rem;
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
   font-weight: 500;
 }

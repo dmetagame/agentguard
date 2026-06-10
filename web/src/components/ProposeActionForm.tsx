@@ -98,7 +98,7 @@ export function ProposeActionForm() {
       </div>
 
       {lastActionId !== undefined && (
-        <div className="mt-4 rounded-md border border-emerald-900/50 bg-emerald-950/30 p-3 text-sm">
+        <div className="mt-4 rounded-md border border-accent/30 bg-accent/5 p-3 text-sm">
           <div className="flex items-center justify-between">
             <div>
               Proposed action #<span className="font-mono">{lastActionId.toString()}</span>. Ready to request agent review.

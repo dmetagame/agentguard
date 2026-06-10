@@ -85,7 +85,7 @@ export function EventLog() {
         {entries.map((e, i) => (
           <div key={i} className="flex gap-3">
             <span className="text-zinc-600">{new Date(e.ts).toLocaleTimeString()}</span>
-            <span className="text-emerald-400 w-20">{e.name}</span>
+            <span className="text-accent w-20">{e.name}</span>
             <span className="text-zinc-300">{e.text}</span>
           </div>
         ))}

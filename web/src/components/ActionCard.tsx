@@ -71,11 +71,11 @@ export function ActionCard({ actionId, isOwner }: { actionId: bigint; isOwner: b
   const decision = Decision[action.decision];
   const tone =
     decision === "Approve"
-      ? "bg-emerald-500/10 text-emerald-300 border-emerald-700"
+      ? "bg-approve/10 text-approve border-approve/50"
       : decision === "Block"
-      ? "bg-red-500/10 text-red-300 border-red-800"
+      ? "bg-block/10 text-block border-block/60"
       : decision === "Review"
-      ? "bg-amber-500/10 text-amber-300 border-amber-800"
+      ? "bg-review/10 text-review border-review/60"
       : "bg-zinc-800 text-zinc-400 border-zinc-700";
 
   const ready = readyAt !== undefined && readyAt > 0n && readyAt < 2n ** 200n;
@@ -171,7 +171,7 @@ export function ActionCard({ actionId, isOwner }: { actionId: bigint; isOwner: b
       )}
 
       {stage === "Decided" && decision === "Review" && countdown > 0 && (
-        <div className="mt-3 text-xs text-amber-300">
+        <div className="mt-3 text-xs text-review">
           ⏳ Executable in {formatCountdown(countdown)} (timelock unlocks at {new Date(Number(readyAt) * 1000).toLocaleString()})
         </div>
       )}

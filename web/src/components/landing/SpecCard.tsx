@@ -75,7 +75,7 @@ export default function SpecCard() {
               className="pointer-events-none absolute inset-x-0 h-px opacity-0"
               style={{
                 background:
-                  "linear-gradient(90deg, transparent, rgba(124,92,255,0.5) 35%, rgba(236,238,244,0.6) 50%, rgba(124,92,255,0.5) 65%, transparent)",
+                  "linear-gradient(90deg, transparent, rgba(215,255,62,0.5) 35%, rgba(236,238,244,0.6) 50%, rgba(215,255,62,0.5) 65%, transparent)",
               }}
             />
 
@@ -125,7 +125,7 @@ export default function SpecCard() {
             </p>
             <Link
               href={APP_PATH}
-              className="mono bg-ink px-5 py-2.5 text-sm font-semibold text-background transition-colors hover:bg-accent hover:text-ink"
+              className="mono bg-ink px-5 py-2.5 text-sm font-semibold text-background transition-colors hover:bg-accent"
             >
               Launch app →
             </Link>

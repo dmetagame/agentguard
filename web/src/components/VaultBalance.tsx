@@ -87,7 +87,7 @@ export function VaultBalance() {
       </div>
 
       {hash && !confirming && (
-        <div className="mt-2 text-xs text-emerald-400">
+        <div className="mt-2 text-xs text-accent">
           Confirmed.{" "}
           <button
             className="underline"

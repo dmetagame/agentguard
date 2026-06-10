@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import Link from "next/link";
-import Logo from "./Logo";
+import ParticleSphere from "./ParticleSphere";
 import { APP_PATH, REPO_URL } from "@/lib/site";
 import { gsap, SplitText, prefersReducedMotion } from "@/lib/gsap";
 
@@ -75,19 +75,16 @@ export default function Hero() {
       ref={sectionRef}
       className="relative overflow-hidden border-b border-hairline"
     >
-      {/* faint structural grid, masked toward center */}
+      {/* particle-network globe + starfield backdrop */}
+      <ParticleSphere className="pointer-events-none absolute inset-0 h-full w-full opacity-50 lg:opacity-100" />
+
+      {/* soft accent glow rising from the horizon */}
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute inset-0"
+        className="pointer-events-none absolute inset-x-0 bottom-0 h-64"
         style={{
-          backgroundImage:
-            "linear-gradient(#232837 1px, transparent 1px), linear-gradient(90deg, #232837 1px, transparent 1px)",
-          backgroundSize: "64px 64px",
-          opacity: 0.25,
-          maskImage:
-            "radial-gradient(ellipse 80% 70% at 50% 40%, black 0%, transparent 75%)",
-          WebkitMaskImage:
-            "radial-gradient(ellipse 80% 70% at 50% 40%, black 0%, transparent 75%)",
+          background:
+            "radial-gradient(ellipse 70% 100% at 50% 115%, rgba(215,255,62,0.08), transparent 70%)",
         }}
       />
 
@@ -98,12 +95,12 @@ export default function Hero() {
         className="pointer-events-none absolute inset-x-0 h-px opacity-0"
         style={{
           background:
-            "linear-gradient(90deg, transparent, rgba(124,92,255,0.5) 30%, rgba(236,238,244,0.6) 50%, rgba(124,92,255,0.5) 70%, transparent)",
+            "linear-gradient(90deg, transparent, rgba(215,255,62,0.5) 30%, rgba(236,238,244,0.6) 50%, rgba(215,255,62,0.5) 70%, transparent)",
         }}
       />
 
       <div className="relative mx-auto flex min-h-[92svh] max-w-6xl flex-col justify-center px-5 pb-20 pt-32 sm:px-8">
-        <div className="grid items-center gap-12 lg:grid-cols-[1fr_auto]">
+        <div>
           <div className="max-w-3xl">
             <p className="eyebrow mb-6" data-hero-fade>
               powered by Somnia Agents · Somnia Testnet
@@ -126,7 +123,7 @@ export default function Hero() {
             <div className="mt-10 flex flex-wrap items-center gap-4" data-hero-fade>
               <Link
                 href={APP_PATH}
-                className="mono bg-ink px-6 py-3 text-sm font-semibold text-background transition-colors hover:bg-accent hover:text-ink"
+                className="mono bg-ink px-6 py-3 text-sm font-semibold text-background transition-colors hover:bg-accent"
               >
                 Launch app →
               </Link>
@@ -146,14 +143,6 @@ export default function Hero() {
                 Built for the Somnia Agentathon.
               </span>
             </div>
-          </div>
-
-          <div
-            className="hidden justify-center text-hairline lg:flex"
-            data-hero-fade
-            aria-hidden="true"
-          >
-            <Logo size={280} accent="#7C5CFF" />
           </div>
         </div>
       </div>

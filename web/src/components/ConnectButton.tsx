@@ -26,7 +26,7 @@ export function ConnectButton() {
   if (chainId !== somniaTestnet.id) {
     return (
       <div className="flex items-center gap-2">
-        <span className="chip border border-amber-700 bg-amber-500/10 text-amber-300">Wrong network</span>
+        <span className="chip border border-review/60 bg-review/10 text-review">Wrong network</span>
         <button className="btn-primary" onClick={() => switchChain({ chainId: somniaTestnet.id })}>
           Switch to Somnia
         </button>
@@ -36,7 +36,7 @@ export function ConnectButton() {
 
   return (
     <div className="flex items-center gap-2">
-      <span className="chip border border-emerald-700 bg-emerald-500/10 text-emerald-300">
+      <span className="chip border border-accent/50 bg-accent/10 text-accent">
         {address?.slice(0, 6)}…{address?.slice(-4)}
       </span>
       <button className="btn-secondary" onClick={() => disconnect()}>
