@@ -3,10 +3,12 @@
 import { useEffect, useRef } from "react";
 import { useReveal } from "@/lib/useReveal";
 import { gsap, prefersReducedMotion } from "@/lib/gsap";
+import { proofByVerdict, txUrl, vaultUrl, type Verdict } from "@/lib/proofs";
 
 const VERDICTS = [
   {
     label: "APPROVE",
+    verdict: "Approve" as Verdict,
     color: "#22c787",
     className: "text-approve",
     title: "Executes.",
@@ -15,6 +17,7 @@ const VERDICTS = [
   },
   {
     label: "REVIEW",
+    verdict: "Review" as Verdict,
     color: "#f5a623",
     className: "text-review",
     title: "24h timelock — owner can veto.",
@@ -23,11 +26,12 @@ const VERDICTS = [
   },
   {
     label: "BLOCK",
+    verdict: "Block" as Verdict,
     color: "#ff5d5d",
     className: "text-block",
     title: "Rejected, logged.",
     detail:
-      "Policy violation. The action never reaches the chain. The attempt is recorded in the action log.",
+      "Policy violation. The vault refuses to execute it — the block is enforced onchain and recorded in the action log.",
   },
 ] as const;
 
@@ -133,28 +137,53 @@ export default function Verdicts() {
           Every action gets a verdict.
         </h2>
         <p className="mt-6 max-w-2xl text-muted" data-reveal>
-          Three outcomes. Nothing executes without one.
+          Three outcomes. Nothing executes without one. Each card links to the
+          real transaction that proves it, live on Somnia Testnet.
         </p>
+        <a
+          href={vaultUrl()}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="mono mt-4 inline-flex items-center gap-1.5 text-xs text-muted underline-offset-4 transition-colors hover:text-accent hover:underline"
+          data-reveal
+        >
+          view the live vault on the explorer ↗
+        </a>
 
         <div className="mt-14 grid gap-5 lg:grid-cols-3">
-          {VERDICTS.map((v) => (
-            <div
-              key={v.label}
-              data-verdict-card
-              data-verdict-color={v.color}
-              data-reveal
-              className="border border-hairline bg-surface p-8"
-            >
+          {VERDICTS.map((v) => {
+            const proof = proofByVerdict(v.verdict);
+            const canonical = proof?.txs[proof.txs.length - 1];
+            return (
               <div
-                data-verdict-label
-                className={`mono text-3xl font-semibold tracking-tight ${v.className}`}
+                key={v.label}
+                data-verdict-card
+                data-verdict-color={v.color}
+                data-reveal
+                className="flex flex-col border border-hairline bg-surface p-8"
               >
-                {v.label}
+                <div
+                  data-verdict-label
+                  className={`mono text-3xl font-semibold tracking-tight ${v.className}`}
+                >
+                  {v.label}
+                </div>
+                <div className="mono mt-5 text-sm text-ink">{v.title}</div>
+                <p className="mt-3 text-sm text-muted">{v.detail}</p>
+                {proof && canonical && (
+                  <a
+                    href={txUrl(canonical.hash)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mono mt-6 inline-flex items-center gap-1.5 text-xs text-muted underline-offset-4 transition-colors hover:text-accent hover:underline"
+                  >
+                    <span className="inline-block size-1.5 rounded-full bg-accent" />
+                    live proof · action #{proof.id.toString()} ↗
+                  </a>
+                )}
               </div>
-              <div className="mono mt-5 text-sm text-ink">{v.title}</div>
-              <p className="mt-3 text-sm text-muted">{v.detail}</p>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
 

@@ -3,8 +3,7 @@
 import { useReadContract } from "wagmi";
 import { formatEther, type Address, type Hex } from "viem";
 import { AgentGuardVaultAbi, Decision, Stage, VAULT_ADDRESS } from "@/lib/contract";
-
-const EXPLORER = "https://shannon-explorer.somnia.network";
+import { EXPLORER, PROOFS, type Proof } from "@/lib/proofs";
 
 type Action = {
   owner: Address;
@@ -23,50 +22,6 @@ type Action = {
   createdAt: bigint;
   decidedAt: bigint;
 };
-
-type Proof = {
-  id: bigint;
-  scenario: string;
-  blurb: string;
-  expect: "Approve" | "Block" | "Review";
-  txs: { label: string; hash: string }[];
-};
-
-// Live, on-chain demo actions on the production vault. The verdict + stage are
-// read live from the chain (so this surface can never overclaim); the tx links
-// point at the exact transactions that prove each outcome.
-const PROOFS: Proof[] = [
-  {
-    id: 1n,
-    scenario: "Safe payment",
-    blurb: "Pay an allowlisted recipient within policy → approved and executed.",
-    expect: "Approve",
-    txs: [
-      { label: "decided", hash: "0x55afbc7373c73f67c58c69504eba9d92f4502ddd7d64488bdd74c26a4c033e3a" },
-      { label: "executed", hash: "0x33a8808d06885bf0e0d04cb78b8d47f0e5d5a6ab1f1f0886a77b2645c41f9dd3" },
-    ],
-  },
-  {
-    id: 2n,
-    scenario: "Suspicious drain",
-    blurb: "Oversized transfer to an unknown address → blocked, never executable.",
-    expect: "Block",
-    txs: [
-      { label: "review", hash: "0x3e01ee959db2a04cf1ab765810a564fa7e7ce90868782186d8056f789f13ee77" },
-      { label: "decided", hash: "0x51432bcda88b28f5e60c6664854981b3cf705b6a267e21378510ccb6d8b2ae97" },
-    ],
-  },
-  {
-    id: 5n,
-    scenario: "Unrecognized payee",
-    blurb: "Plain transfer to a vendor not on the allowlist → held behind a 24h human-review timelock.",
-    expect: "Review",
-    txs: [
-      { label: "review", hash: "0x4f56c6bb4dfa1d2bb41d7fad9c1df54db413ab414d461dda34f34b8787ac9823" },
-      { label: "decided", hash: "0x351438752ac853201fe264ee50c485fdc5a6c27c261c59ff316babf89e613332" },
-    ],
-  },
-];
 
 export function PublicProofs() {
   return (
@@ -104,12 +59,12 @@ function ProofCard({ proof }: { proof: Proof }) {
 
   const decision = action ? Decision[action.decision] : undefined;
   const stage = action ? Stage[action.stage] : undefined;
-  const settled = decision === proof.expect;
+  const settled = decision === proof.verdict;
 
   const tone =
-    proof.expect === "Approve"
+    proof.verdict === "Approve"
       ? "border-approve/50 bg-approve/5"
-      : proof.expect === "Block"
+      : proof.verdict === "Block"
       ? "border-block/60 bg-block/5"
       : "border-review/60 bg-review/5";
 
