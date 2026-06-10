@@ -144,6 +144,13 @@ Deploy / seed (see `Makefile` and `script/`): deploys via `cast send` with a
 chain gas estimate + margin + `--legacy`, and compiles with
 `evm_version = "paris"` — Somnia charges ~12× vanilla EVM gas and rejects PUSH0.
 
+## Submission materials
+
+- **Full submission writeup:** [docs/SUBMISSION.md](./docs/SUBMISSION.md)
+- **On-chain proof (verifiable transactions):** [docs/PROOF.md](./docs/PROOF.md)
+- **Pitch deck (3 slides, animated):** https://agentguard-beta.vercel.app/submission-deck.html — press `P` to export a 3-page PDF
+- **One-slide pitch:** https://agentguard-beta.vercel.app/submission-slide.html
+
 ## License
 
 MIT
