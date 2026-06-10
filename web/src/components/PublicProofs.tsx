@@ -57,11 +57,14 @@ const PROOFS: Proof[] = [
     ],
   },
   {
-    id: 3n,
-    scenario: "Unknown dApp",
-    blurb: "Ambiguous call to an unaudited dApp → held behind a human-review timelock.",
+    id: 5n,
+    scenario: "Unrecognized payee",
+    blurb: "Plain transfer to a vendor not on the allowlist → held behind a 24h human-review timelock.",
     expect: "Review",
-    txs: [],
+    txs: [
+      { label: "review", hash: "0x4f56c6bb4dfa1d2bb41d7fad9c1df54db413ab414d461dda34f34b8787ac9823" },
+      { label: "decided", hash: "0x351438752ac853201fe264ee50c485fdc5a6c27c261c59ff316babf89e613332" },
+    ],
   },
 ];
 

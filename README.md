@@ -61,12 +61,13 @@ live on the landing page; the transactions below prove each on-chain.
 
 | Scenario        | Action | Verdict   | Result                | Proof |
 |-----------------|:------:|-----------|-----------------------|-------|
-| Safe payment    | `#1`   | `APPROVE` | Executed              | [decided](https://shannon-explorer.somnia.network/tx/0x55afbc7373c73f67c58c69504eba9d92f4502ddd7d64488bdd74c26a4c033e3a) · [executed](https://shannon-explorer.somnia.network/tx/0x33a8808d06885bf0e0d04cb78b8d47f0e5d5a6ab1f1f0886a77b2645c41f9dd3) |
-| Suspicious drain| `#2`   | `BLOCK`   | Never executable      | [review](https://shannon-explorer.somnia.network/tx/0x3e01ee959db2a04cf1ab765810a564fa7e7ce90868782186d8056f789f13ee77) · [decided](https://shannon-explorer.somnia.network/tx/0x51432bcda88b28f5e60c6664854981b3cf705b6a267e21378510ccb6d8b2ae97) |
-| Unknown dApp    | `#3`   | `REVIEW`  | Held behind timelock  | _finalizing_ |
+| Safe payment      | `#1`   | `APPROVE` | Executed             | [decided](https://shannon-explorer.somnia.network/tx/0x55afbc7373c73f67c58c69504eba9d92f4502ddd7d64488bdd74c26a4c033e3a) · [executed](https://shannon-explorer.somnia.network/tx/0x33a8808d06885bf0e0d04cb78b8d47f0e5d5a6ab1f1f0886a77b2645c41f9dd3) |
+| Suspicious drain  | `#2`   | `BLOCK`   | Never executable     | [review](https://shannon-explorer.somnia.network/tx/0x3e01ee959db2a04cf1ab765810a564fa7e7ce90868782186d8056f789f13ee77) · [decided](https://shannon-explorer.somnia.network/tx/0x51432bcda88b28f5e60c6664854981b3cf705b6a267e21378510ccb6d8b2ae97) |
+| Unrecognized payee| `#5`   | `REVIEW`  | Held behind 24h timelock | [review](https://shannon-explorer.somnia.network/tx/0x4f56c6bb4dfa1d2bb41d7fad9c1df54db413ab414d461dda34f34b8787ac9823) · [decided](https://shannon-explorer.somnia.network/tx/0x351438752ac853201fe264ee50c485fdc5a6c27c261c59ff316babf89e613332) |
 
 `executeAction(#2)` reverts with `NotApproved(Block)` — the block is enforced by
-the contract, not just displayed in the UI.
+the contract, not just displayed in the UI. `executeAction(#5)` reverts with
+`ReviewTimelockPending` until the 24h timelock elapses.
 
 ## Architecture
 
