@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>AgentGuard — Submission Slide</title>
+<style>
+  :root{
+    --bg:#0b0d12; --surface:#12151c; --hair:#232837; --ink:#eceef4;
+    --muted:#8b93a5; --accent:#d7ff3e; --approve:#22c787; --review:#f5a623; --block:#ff5d5d;
+    --sans:"Inter",ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+    --mono:ui-monospace,"JetBrains Mono",SFMono-Regular,Menlo,monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{background:#05060a;color:var(--ink);font-family:var(--sans)}
+  body{display:flex;align-items:center;justify-content:center;min-height:100vh}
+
+  /* 16:9 canvas, scales to viewport */
+  .slide{
+    position:relative;width:1280px;height:720px;background:
+      radial-gradient(ellipse 70% 60% at 82% -10%, rgba(215,255,62,.07), transparent 60%),
+      var(--bg);
+    border:1px solid var(--hair);overflow:hidden;
+    padding:44px 52px 0;display:flex;flex-direction:column;
+  }
+  /* header */
+  .top{display:flex;align-items:center;justify-content:space-between}
+  .brand{display:flex;align-items:center;gap:12px}
+  .brand .name{font-size:20px;font-weight:600;letter-spacing:-.01em}
+  .brand .sub{font-family:var(--mono);font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);border-left:1px solid var(--hair);padding-left:12px;margin-left:2px}
+  .badge{font-family:var(--mono);font-size:11px;color:var(--muted);border:1px solid var(--hair);background:var(--surface);padding:6px 12px;display:flex;align-items:center;gap:8px}
+  .dot{width:6px;height:6px;border-radius:50%;background:var(--accent);display:inline-block}
+
+  /* hero */
+  .hero{margin-top:34px}
+  .eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--accent);opacity:.9}
+  h1{font-size:46px;line-height:1.05;letter-spacing:-.02em;margin-top:14px;font-weight:600;max-width:760px}
+  .lede{margin-top:16px;font-size:15.5px;line-height:1.55;color:var(--muted);max-width:740px}
+  .lede b{color:var(--ink);font-weight:500}
+
+  /* body grid */
+  .body{margin-top:26px;display:grid;grid-template-columns:1fr 1.18fr;gap:30px;flex:1}
+
+  .flow .label,.verds .label{font-family:var(--mono);font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);margin-bottom:12px}
+  .steps{display:flex;flex-direction:column;gap:9px}
+  .step{display:flex;gap:12px;align-items:flex-start}
+  .step .n{font-family:var(--mono);font-size:11px;color:var(--accent);min-width:20px;padding-top:1px}
+  .step .t{font-size:13px;line-height:1.4}
+  .step .t b{font-weight:600}
+  .step .t span{color:var(--muted)}
+
+  .verds{display:flex;flex-direction:column;gap:10px}
+  .card{border:1px solid var(--hair);background:var(--surface);padding:12px 15px;display:flex;align-items:center;gap:14px}
+  .card .v{font-family:var(--mono);font-weight:700;font-size:17px;min-width:96px}
+  .card .d{font-size:12.5px;line-height:1.35;color:var(--muted);flex:1}
+  .card .d b{color:var(--ink);font-weight:600}
+  .card .pill{font-family:var(--mono);font-size:10px;color:var(--muted);border:1px solid var(--hair);padding:3px 8px;white-space:nowrap}
+  .ca{border-color:rgba(34,199,135,.5)} .ca .v{color:var(--approve)}
+  .cr{border-color:rgba(245,166,35,.5)} .cr .v{color:var(--review)}
+  .cb{border-color:rgba(255,93,93,.5)} .cb .v{color:var(--block)}
+  .proofnote{font-family:var(--mono);font-size:10.5px;color:var(--muted);margin-top:2px;display:flex;align-items:center;gap:7px}
+
+  /* footer strip */
+  .foot{margin:22px -52px 0;border-top:1px solid var(--hair);background:rgba(18,21,28,.55);
+    padding:14px 52px;display:flex;align-items:center;justify-content:space-between;gap:20px}
+  .specs{display:flex;gap:26px;flex-wrap:wrap}
+  .spec .k{font-family:var(--mono);font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+  .spec .val{font-size:12px;margin-top:2px}
+  .spec .val.mono{font-family:var(--mono);font-size:11px}
+  .links{font-family:var(--mono);font-size:11.5px;text-align:right;line-height:1.7}
+  .links a{color:var(--ink);text-decoration:none}
+  .links .accent{color:var(--accent)}
+
+  @media print{
+    @page{size:1280px 720px;margin:0}
+    body{min-height:auto}
+    .slide{border:none}
+  }
+</style>
+</head>
+<body>
+  <div class="slide">
+    <!-- header -->
+    <div class="top">
+      <div class="brand">
+        <!-- shield mark -->
+        <svg width="30" height="30" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+          <path d="M16 3 L27 7 V16 C27 23 22 27.5 16 29.5 C10 27.5 5 23 5 16 V7 Z"
+                stroke="#d7ff3e" stroke-width="1.6" fill="rgba(215,255,62,0.06)"/>
+          <path d="M11 16.5 L14.5 20 L21 12.5" stroke="#d7ff3e" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <span class="name">AgentGuard</span>
+        <span class="sub">onchain firewall</span>
+      </div>
+      <span class="badge"><span class="dot"></span>Somnia Agentathon · Live on Somnia Testnet</span>
+    </div>
+
+    <!-- hero -->
+    <div class="hero">
+      <div class="eyebrow">powered by Somnia Agents</div>
+      <h1>An on-chain firewall for autonomous AI wallets.</h1>
+      <p class="lede">
+        Agents that hold private keys are an unbounded liability — one prompt injection or hallucinated
+        trade drains the wallet. AgentGuard puts a <b>programmable checkpoint between an agent's intent
+        and the chain</b>: funds live in a vault, agents can propose but never execute, and every action
+        is reviewed by consensus-verified Somnia Agents before a cent moves.
+      </p>
+    </div>
+
+    <!-- body -->
+    <div class="body">
+      <!-- how it works -->
+      <div class="flow">
+        <div class="label">how it works</div>
+        <div class="steps">
+          <div class="step"><span class="n">01</span><span class="t"><b>Agent proposes</b> <span>— submits an action; it cannot execute directly.</span></span></div>
+          <div class="step"><span class="n">02</span><span class="t"><b>Vault holds</b> <span>— takes custody, pending review.</span></span></div>
+          <div class="step"><span class="n">03</span><span class="t"><b>Agents review</b> <span>— Parse-Website verifies context; Qwen3-30B LLM Inference judges intent vs policy.</span></span></div>
+          <div class="step"><span class="n">04</span><span class="t"><b>Verdict on-chain</b> <span>— returned by a validator subcommittee on strict-majority consensus, not a trusted oracle.</span></span></div>
+          <div class="step"><span class="n">05</span><span class="t"><b>Vault disposes</b> <span>— executes, timelocks, or blocks.</span></span></div>
+        </div>
+        <div class="label" style="margin-top:20px">owner-defined policy</div>
+        <div class="step"><span class="t"><span>Spend caps · vault-ratio caps · 24h review timelock · target allowlist · blocked keywords. Caps are <b style="color:var(--ink)">hard limits in the contract</b> — even APPROVE can't exceed them.</span></span></div>
+      </div>
+
+      <!-- verdicts -->
+      <div class="verds">
+        <div class="label">every action gets a verdict — proven live on-chain</div>
+        <div class="card ca">
+          <span class="v">APPROVE</span>
+          <span class="d"><b>Safe payment</b> to an allowlisted recipient → executed.</span>
+          <span class="pill">action #1 ✓</span>
+        </div>
+        <div class="card cr">
+          <span class="v">REVIEW</span>
+          <span class="d"><b>Unrecognized payee</b> → held behind a 24h timelock the owner can veto.</span>
+          <span class="pill">action #5 ✓</span>
+        </div>
+        <div class="card cb">
+          <span class="v">BLOCK</span>
+          <span class="d"><b>Suspicious drain</b> → never executable; <span style="font-family:var(--mono)">executeAction</span> reverts on-chain.</span>
+          <span class="pill">action #2 ✓</span>
+        </div>
+        <div class="proofnote"><span class="dot"></span>Each verdict is a real, explorer-verifiable transaction. Proof cards on the dapp read verdicts live from the contract — no wallet needed.</div>
+      </div>
+    </div>
+
+    <!-- footer -->
+    <div class="foot">
+      <div class="specs">
+        <div class="spec"><div class="k">network</div><div class="val">Somnia Testnet · chainId 50312</div></div>
+        <div class="spec"><div class="k">vault</div><div class="val mono">0x3f64…3a91</div></div>
+        <div class="spec"><div class="k">agents</div><div class="val">Parse-Website + LLM Inference</div></div>
+        <div class="spec"><div class="k">safety</div><div class="val">solvent · hard caps · fail-safe · 11 tests</div></div>
+      </div>
+      <div class="links">
+        <div><span class="accent">▲</span> agentguard-beta.vercel.app</div>
+        <div>github.com/dmetagame/agentguard</div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
