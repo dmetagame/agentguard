@@ -5,7 +5,7 @@ import { useReveal } from "@/lib/useReveal";
 
 const POLICY_SNIPPET = `{
   "spend_limits": {
-    "USDC": { "per_action": "500", "per_day": "2000" }
+    "STT": { "per_action": "500", "per_day": "2000" }
   },
   "allowed_protocols": ["dex.xyz"],
   "allowed_counterparties": "owner_allowlist",

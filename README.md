@@ -7,7 +7,7 @@ dangerous actions are blocked, and ambiguous actions are held behind a
 human-review timelock — all enforced by the vault contract, not by trust in the
 agent.
 
-- **Live app:** https://agentguard-beta.vercel.app
+- **Live site:** https://agentguard-beta.vercel.app — **launch the dapp at [/app](https://agentguard-beta.vercel.app/app)** (vault, policy, propose & review actions; the live proof cards render there without a wallet).
 - **Network:** Somnia Testnet (chainId `50312`)
 - **Vault:** [`0x3f64d310b88f8c89afd70cccd33094df7e7c3a91`](https://shannon-explorer.somnia.network/address/0x3f64d310b88f8c89afd70cccd33094df7e7c3a91)
 - Built for the **Somnia Agentathon**.

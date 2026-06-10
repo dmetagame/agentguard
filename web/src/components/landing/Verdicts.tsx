@@ -39,7 +39,7 @@ type LogSegment = { text: string; color?: string };
 
 const LOG_LINES: LogSegment[][] = [
   [
-    { text: "agent: swap 500 USDC→SOMI on dex.xyz" },
+    { text: "agent: swap 500 STT on dex.xyz" },
     { text: " → parse-website: contract verified" },
     { text: " → llm-inference: intent matches policy" },
     { text: " → VERDICT: APPROVE", color: "#22c787" },
@@ -50,7 +50,7 @@ const LOG_LINES: LogSegment[][] = [
     { text: " → VERDICT: BLOCK", color: "#ff5d5d" },
   ],
   [
-    { text: "agent: send 1,200 USDC to new counterparty 0x4c…a1" },
+    { text: "agent: send 1,200 STT to new counterparty 0x4c…a1" },
     { text: " → llm-inference: counterparty not in allowlist" },
     { text: " → VERDICT: REVIEW (24h timelock)", color: "#f5a623" },
   ],
