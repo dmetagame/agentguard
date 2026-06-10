@@ -8,13 +8,18 @@ export default function manifest(): MetadataRoute.Manifest {
       "A programmable safety layer for autonomous AI wallets, secured by consensus-verified Somnia Agents.",
     start_url: "/",
     display: "standalone",
-    background_color: "#09090b",
-    theme_color: "#09090b",
+    background_color: "#0b0d12",
+    theme_color: "#0b0d12",
     icons: [
       {
         src: "/favicon.ico",
         sizes: "any",
         type: "image/x-icon",
+      },
+      {
+        src: "/logo.svg",
+        sizes: "any",
+        type: "image/svg+xml",
       },
     ],
   };

@@ -1,22 +1,113 @@
 @import "tailwindcss";
 
-:root {
-  --background: #09090b;
-  --foreground: #fafafa;
-}
-
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-background: #0b0d12;
+  --color-surface: #12151c;
+  --color-hairline: #232837;
+  --color-ink: #eceef4;
+  --color-muted: #8b93a5;
+  --color-accent: #7c5cff;
+  --color-approve: #22c787;
+  --color-review: #f5a623;
+  --color-block: #ff5d5d;
+
+  --font-display: var(--font-space-grotesk), ui-sans-serif, system-ui,
+    sans-serif;
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-jetbrains-mono), ui-monospace, SFMono-Regular, Menlo,
+    monospace;
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: var(--font-sans), system-ui, sans-serif;
+:root {
+  color-scheme: dark;
 }
+
+/* In @layer base so Tailwind utilities (e.g. the dapp's text-3xl,
+   border-zinc-800) still win over these element defaults. */
+@layer base {
+  html {
+    background: #0b0d12;
+  }
+
+  body {
+    background: #0b0d12;
+    color: #eceef4;
+    font-family: var(--font-sans);
+    font-size: 1rem;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-display);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: 1.05;
+  }
+
+  h1 {
+    font-size: clamp(2.75rem, 7vw, 5.5rem);
+  }
+
+  h2 {
+    font-size: clamp(1.75rem, 3.5vw, 2.75rem);
+  }
+
+  h3 {
+    font-size: clamp(1.125rem, 2vw, 1.5rem);
+    font-weight: 500;
+  }
+
+  code,
+  pre,
+  kbd,
+  samp {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum", "zero";
+  }
+
+  ::selection {
+    background: rgb(124 92 255 / 0.22);
+    color: #eceef4;
+  }
+
+  * {
+    border-color: #232837;
+  }
+}
+
+.mono {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum", "zero";
+}
+
+.eyebrow {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  color: #8b93a5;
+}
+
+/* Reduced-motion backstop: kill all CSS animation/transition durations.
+   JS motion is separately gated in lib/gsap.ts. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ── dapp (/app) utilities ─────────────────────────────────────────── */
 
 @utility card {
   border-radius: 0.75rem;
