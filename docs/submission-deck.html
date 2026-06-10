@@ -1,0 +1,324 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>AgentGuard — Submission Deck</title>
+<script>document.documentElement.classList.add('js')</script>
+<style>
+  :root{
+    --bg:#0b0d12; --surface:#12151c; --hair:#232837; --ink:#eceef4;
+    --muted:#8b93a5; --accent:#d7ff3e; --approve:#22c787; --review:#f5a623; --block:#ff5d5d;
+    --sans:"Inter",ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+    --mono:ui-monospace,"JetBrains Mono",SFMono-Regular,Menlo,monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{background:#05060a;color:var(--ink);font-family:var(--sans);overflow:hidden}
+
+  .deck{height:100vh;overflow-y:auto;scroll-snap-type:y mandatory;scroll-behavior:smooth}
+  .deck::-webkit-scrollbar{display:none}
+  .deck{scrollbar-width:none}
+
+  .slide{
+    position:relative;height:100vh;scroll-snap-align:start;overflow:hidden;
+    display:flex;align-items:center;justify-content:center;
+    padding:64px clamp(40px,7vw,120px);
+    background:radial-gradient(ellipse 60% 55% at 82% -8%, rgba(215,255,62,.07), transparent 60%), var(--bg);
+    border-bottom:1px solid var(--hair);
+  }
+  .inner{width:100%;max-width:1180px}
+
+  /* top bar */
+  .bar{position:absolute;top:30px;left:clamp(40px,7vw,120px);right:clamp(40px,7vw,120px);
+    display:flex;align-items:center;justify-content:space-between}
+  .brand{display:flex;align-items:center;gap:11px}
+  .brand .name{font-size:17px;font-weight:600;letter-spacing:-.01em}
+  .brand .sub{font-family:var(--mono);font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);border-left:1px solid var(--hair);padding-left:11px}
+  .pageno{font-family:var(--mono);font-size:11px;color:var(--muted)}
+  .dot{width:6px;height:6px;border-radius:50%;background:var(--accent);display:inline-block}
+
+  /* scan line */
+  .scan{position:absolute;left:0;right:0;height:1px;opacity:0;pointer-events:none;
+    background:linear-gradient(90deg,transparent,rgba(215,255,62,.5) 30%,rgba(236,238,244,.6) 50%,rgba(215,255,62,.5) 70%,transparent)}
+
+  /* typography */
+  .eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.22em;text-transform:uppercase;color:var(--accent)}
+  h1{font-size:clamp(34px,4.6vw,58px);line-height:1.04;letter-spacing:-.02em;font-weight:600;margin-top:18px;max-width:18ch}
+  .lede{margin-top:20px;font-size:clamp(14px,1.5vw,18px);line-height:1.55;color:var(--muted);max-width:60ch}
+  .lede b{color:var(--ink);font-weight:500}
+  .label{font-family:var(--mono);font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted)}
+
+  /* problem vectors */
+  .vectors{margin-top:42px;display:grid;grid-template-columns:repeat(3,1fr);gap:1px;border:1px solid var(--hair);background:var(--hair)}
+  .vec{background:var(--surface);padding:26px}
+  .vec .n{font-family:var(--mono);font-size:12px;color:var(--muted)}
+  .vec .t{font-family:var(--mono);font-size:16px;font-weight:600;margin-top:14px}
+  .vec .d{font-size:13.5px;line-height:1.5;color:var(--muted);margin-top:10px}
+
+  /* flow */
+  .flow{margin-top:40px;display:flex;align-items:stretch;gap:0}
+  .fstep{flex:1;background:var(--surface);border:1px solid var(--hair);padding:18px 16px}
+  .fstep .n{font-family:var(--mono);font-size:11px;color:var(--accent)}
+  .fstep .t{font-family:var(--mono);font-size:13px;font-weight:600;margin-top:10px}
+  .fstep .d{font-size:11.5px;line-height:1.45;color:var(--muted);margin-top:7px}
+  .arr{display:flex;align-items:center;color:var(--muted);padding:0 8px;font-size:15px}
+  .policy{margin-top:26px;border-left:2px solid var(--accent);background:rgba(18,21,28,.6);padding:16px 22px;font-size:14px;line-height:1.55;color:var(--ink);max-width:78ch}
+  .policy b{color:var(--accent);font-weight:600}
+
+  /* verdict cards */
+  .verds{margin-top:36px;display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+  .vcard{border:1px solid var(--hair);background:var(--surface);padding:26px}
+  .vcard .v{font-family:var(--mono);font-size:30px;font-weight:700;letter-spacing:-.01em}
+  .vcard .title{font-family:var(--mono);font-size:14px;margin-top:18px;color:var(--ink)}
+  .vcard .d{font-size:13px;line-height:1.5;color:var(--muted);margin-top:10px}
+  .vcard .proof{margin-top:18px;font-family:var(--mono);font-size:11px;color:var(--muted);display:flex;align-items:center;gap:8px;border-top:1px solid var(--hair);padding-top:14px}
+  .ca{border-color:rgba(34,199,135,.5)} .ca .v{color:var(--approve)}
+  .cr{border-color:rgba(245,166,35,.5)} .cr .v{color:var(--review)}
+  .cb{border-color:rgba(255,93,93,.5)} .cb .v{color:var(--block)}
+
+  /* spec footer on slide 3 */
+  .specrow{margin-top:34px;display:flex;flex-wrap:wrap;gap:30px;align-items:flex-end;justify-content:space-between}
+  .specs{display:flex;gap:30px;flex-wrap:wrap}
+  .spec .k{font-family:var(--mono);font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+  .spec .val{font-size:13px;margin-top:3px}
+  .spec .val.mono{font-family:var(--mono);font-size:12px}
+  .links{font-family:var(--mono);font-size:12.5px;text-align:right;line-height:1.8}
+  .links .accent{color:var(--accent)}
+
+  /* HUD */
+  .hud{position:fixed;bottom:22px;left:0;right:0;display:flex;align-items:center;justify-content:center;gap:18px;z-index:50}
+  .hud .dots{display:flex;gap:9px}
+  .hud .pip{width:8px;height:8px;border-radius:50%;background:var(--hair);border:1px solid #2c3140;cursor:pointer;transition:all .3s}
+  .hud .pip.on{background:var(--accent);border-color:var(--accent);transform:scale(1.15)}
+  .hud .nav{font-family:var(--mono);font-size:11px;color:var(--muted);border:1px solid var(--hair);background:rgba(18,21,28,.8);
+    backdrop-filter:blur(6px);padding:6px 12px;cursor:pointer;user-select:none}
+  .hud .hint{font-family:var(--mono);font-size:10px;color:#5b6273}
+  .progress{position:fixed;top:0;left:0;height:2px;background:var(--accent);width:0;z-index:60;transition:width .4s ease}
+
+  /* ---- MOTION ---- */
+  @media (prefers-reduced-motion: no-preference){
+    html.js [data-anim]{opacity:0;transform:translateY(20px)}
+    html.js .slide.active [data-anim]{opacity:1;transform:none;
+      transition:opacity .7s ease, transform .7s cubic-bezier(.2,.7,.2,1);transition-delay:var(--d,0s)}
+    html.js [data-stamp]{opacity:0}
+    html.js .slide.active [data-stamp]{animation:stamp .55s cubic-bezier(.2,1.5,.4,1) forwards;animation-delay:var(--d,0s)}
+    html.js .slide.active .scan{animation:scan 1.5s ease forwards}
+    html.js .slide.active .vcard{animation:flash .9s ease .5s both}
+  }
+  @keyframes stamp{from{opacity:0;transform:scale(1.9)}60%{opacity:1}to{opacity:1;transform:scale(1)}}
+  @keyframes scan{0%{top:6%;opacity:0}15%{opacity:1}85%{opacity:1}100%{top:94%;opacity:0}}
+  @keyframes flash{0%{box-shadow:0 0 0 1px var(--bc,transparent)}100%{box-shadow:0 0 0 0 transparent}}
+  .ca{--bc:rgba(34,199,135,.6)} .cr{--bc:rgba(245,166,35,.6)} .cb{--bc:rgba(255,93,93,.6)}
+
+  @media (prefers-reduced-motion: reduce){
+    .deck{scroll-behavior:auto}
+    [data-anim],[data-stamp]{opacity:1!important;transform:none!important;animation:none!important;transition:none!important}
+    .scan{display:none}
+  }
+
+  /* ---- PRINT → 3-page PDF ---- */
+  @page{size:1280px 720px;margin:0}
+  @media print{
+    body{overflow:visible}
+    .hud,.progress{display:none!important}
+    .deck{height:auto;overflow:visible;scroll-snap-type:none}
+    .slide{height:720px;width:1280px;page-break-after:always;break-after:page;border:none}
+    [data-anim],[data-stamp]{opacity:1!important;transform:none!important;animation:none!important}
+    .scan{display:none}
+  }
+</style>
+</head>
+<body>
+<div class="progress" id="prog"></div>
+<div class="deck js" id="deck">
+
+  <!-- ===================== SLIDE 1 — PROBLEM ===================== -->
+  <section class="slide" id="s1">
+    <div class="scan"></div>
+    <div class="bar">
+      <div class="brand">
+        <svg width="26" height="26" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+          <path d="M16 3 L27 7 V16 C27 23 22 27.5 16 29.5 C10 27.5 5 23 5 16 V7 Z" stroke="#d7ff3e" stroke-width="1.6" fill="rgba(215,255,62,.06)"/>
+          <path d="M11 16.5 L14.5 20 L21 12.5" stroke="#d7ff3e" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <span class="name">AgentGuard</span>
+        <span class="sub">onchain firewall</span>
+      </div>
+      <span class="pageno">01 / 03 · the problem</span>
+    </div>
+
+    <div class="inner">
+      <div class="eyebrow" data-anim style="--d:.05s">the problem</div>
+      <h1 data-anim style="--d:.15s">A wallet that signs whatever the model says is an unbounded liability.</h1>
+      <p class="lede" data-anim style="--d:.3s">
+        AI agents are starting to hold private keys and move funds on their own. The moment they do, the
+        agent's judgment is the <b>only</b> thing standing between your money and an attacker — and that
+        judgment is exactly what gets attacked.
+      </p>
+      <div class="vectors">
+        <div class="vec" data-anim style="--d:.45s"><div class="n">01</div><div class="t">prompt injection</div><div class="d">Hostile content steers the model into signing what an attacker wants.</div></div>
+        <div class="vec" data-anim style="--d:.58s"><div class="n">02</div><div class="t">hallucinated trades</div><div class="d">The model invents an action that was never in its mandate.</div></div>
+        <div class="vec" data-anim style="--d:.71s"><div class="n">03</div><div class="t">malicious counterparties</div><div class="d">A plausible-looking contract or address that drains on contact.</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== SLIDE 2 — SOLUTION / HOW ===================== -->
+  <section class="slide" id="s2">
+    <div class="scan"></div>
+    <div class="bar">
+      <div class="brand">
+        <svg width="26" height="26" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+          <path d="M16 3 L27 7 V16 C27 23 22 27.5 16 29.5 C10 27.5 5 23 5 16 V7 Z" stroke="#d7ff3e" stroke-width="1.6" fill="rgba(215,255,62,.06)"/>
+          <path d="M11 16.5 L14.5 20 L21 12.5" stroke="#d7ff3e" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <span class="name">AgentGuard</span>
+        <span class="sub">onchain firewall</span>
+      </div>
+      <span class="pageno">02 / 03 · the solution</span>
+    </div>
+
+    <div class="inner">
+      <div class="eyebrow" data-anim style="--d:.05s">the solution</div>
+      <h1 data-anim style="--d:.15s">A programmable checkpoint between intent and the chain.</h1>
+      <p class="lede" data-anim style="--d:.3s">
+        Funds live in a vault. Agents can <b>propose</b> actions but never execute them. Every proposal is
+        reviewed by consensus-verified Somnia Agents — a <b>Parse-Website</b> agent for external context and
+        a deterministic <b>Qwen3-30B LLM Inference</b> agent — whose verdict is returned on-chain.
+      </p>
+
+      <div class="label" data-anim style="--d:.42s">how it works</div>
+      <div class="flow">
+        <div class="fstep" data-anim style="--d:.5s"><div class="n">01</div><div class="t">agent proposes</div><div class="d">Submits intent. Cannot execute directly.</div></div>
+        <div class="arr" data-anim style="--d:.56s">→</div>
+        <div class="fstep" data-anim style="--d:.62s"><div class="n">02</div><div class="t">vault holds</div><div class="d">Takes custody, pending review.</div></div>
+        <div class="arr" data-anim style="--d:.68s">→</div>
+        <div class="fstep" data-anim style="--d:.74s"><div class="n">03</div><div class="t">agents review</div><div class="d">Parse-Website + LLM Inference judge it.</div></div>
+        <div class="arr" data-anim style="--d:.8s">→</div>
+        <div class="fstep" data-anim style="--d:.86s"><div class="n">04</div><div class="t">verdict on-chain</div><div class="d">Validator-subcommittee consensus, no oracle.</div></div>
+        <div class="arr" data-anim style="--d:.92s">→</div>
+        <div class="fstep" data-anim style="--d:.98s"><div class="n">05</div><div class="t">vault disposes</div><div class="d">Executes, timelocks, or blocks.</div></div>
+      </div>
+
+      <div class="policy" data-anim style="--d:1.1s">
+        <b>Owner-defined policy:</b> spend caps · vault-ratio caps · 24h review timelock · target allowlist ·
+        blocked keywords. Caps are <b>hard limits in the contract</b> — even an APPROVE can't exceed them.
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== SLIDE 3 — LIVE PROOF ===================== -->
+  <section class="slide" id="s3">
+    <div class="scan"></div>
+    <div class="bar">
+      <div class="brand">
+        <svg width="26" height="26" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+          <path d="M16 3 L27 7 V16 C27 23 22 27.5 16 29.5 C10 27.5 5 23 5 16 V7 Z" stroke="#d7ff3e" stroke-width="1.6" fill="rgba(215,255,62,.06)"/>
+          <path d="M11 16.5 L14.5 20 L21 12.5" stroke="#d7ff3e" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <span class="name">AgentGuard</span>
+        <span class="sub">onchain firewall</span>
+      </div>
+      <span class="pageno">03 / 03 · live proof</span>
+    </div>
+
+    <div class="inner">
+      <div class="eyebrow" data-anim style="--d:.05s">live on Somnia Testnet</div>
+      <h1 data-anim style="--d:.15s">Every verdict is a real transaction.</h1>
+      <p class="lede" data-anim style="--d:.3s">All three outcomes are finalized on the production vault — verifiable on the explorer, read live by the dapp's proof cards with no wallet required.</p>
+
+      <div class="verds">
+        <div class="vcard ca">
+          <div class="v" data-stamp style="--d:.45s">APPROVE</div>
+          <div class="title" data-anim style="--d:.6s">Executes.</div>
+          <div class="d" data-anim style="--d:.66s">Safe payment to an allowlisted recipient, within policy.</div>
+          <div class="proof" data-anim style="--d:.72s"><span class="dot"></span>action #1 · executed ✓</div>
+        </div>
+        <div class="vcard cr">
+          <div class="v" data-stamp style="--d:.6s">REVIEW</div>
+          <div class="title" data-anim style="--d:.75s">24h timelock — owner can veto.</div>
+          <div class="d" data-anim style="--d:.81s">Unrecognized payee, not on the allowlist. Held before it executes.</div>
+          <div class="proof" data-anim style="--d:.87s"><span class="dot"></span>action #5 · decided ✓</div>
+        </div>
+        <div class="vcard cb">
+          <div class="v" data-stamp style="--d:.75s">BLOCK</div>
+          <div class="title" data-anim style="--d:.9s">Rejected, enforced.</div>
+          <div class="d" data-anim style="--d:.96s">Suspicious drain. <span style="font-family:var(--mono)">executeAction</span> reverts on-chain.</div>
+          <div class="proof" data-anim style="--d:1.02s"><span class="dot"></span>action #2 · decided ✓</div>
+        </div>
+      </div>
+
+      <div class="specrow">
+        <div class="specs" data-anim style="--d:1.15s">
+          <div class="spec"><div class="k">network</div><div class="val">Somnia Testnet · 50312</div></div>
+          <div class="spec"><div class="k">vault</div><div class="val mono">0x3f64…3a91</div></div>
+          <div class="spec"><div class="k">safety</div><div class="val">solvent · hard caps · fail-safe · 11 tests</div></div>
+        </div>
+        <div class="links" data-anim style="--d:1.25s">
+          <div><span class="accent">▲</span> agentguard-beta.vercel.app</div>
+          <div>github.com/dmetagame/agentguard</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<!-- HUD -->
+<div class="hud">
+  <div class="nav" id="prev">‹ prev</div>
+  <div class="dots" id="dots"></div>
+  <div class="nav" id="next">next ›</div>
+  <span class="hint">← → / scroll · press P to print</span>
+</div>
+
+<script>
+(function(){
+  var deck=document.getElementById('deck');
+  var slides=[].slice.call(deck.querySelectorAll('.slide'));
+  var dotsWrap=document.getElementById('dots');
+  var prog=document.getElementById('prog');
+  var idx=0;
+
+  slides.forEach(function(s,i){
+    var p=document.createElement('div');
+    p.className='pip'+(i===0?' on':'');
+    p.addEventListener('click',function(){go(i)});
+    dotsWrap.appendChild(p);
+  });
+  var pips=[].slice.call(dotsWrap.children);
+
+  function go(i){
+    i=Math.max(0,Math.min(slides.length-1,i));
+    slides[i].scrollIntoView({behavior:'smooth'});
+  }
+  function setActive(i){
+    idx=i;
+    slides.forEach(function(s,k){s.classList.toggle('active',k===i)});
+    pips.forEach(function(p,k){p.classList.toggle('on',k===i)});
+    prog.style.width=((i+1)/slides.length*100)+'%';
+  }
+
+  var io=new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if(e.isIntersecting && e.intersectionRatio>=0.55){ setActive(slides.indexOf(e.target)); }
+    });
+  },{threshold:[0.55]});
+  slides.forEach(function(s){io.observe(s)});
+  setActive(0);
+
+  document.getElementById('next').addEventListener('click',function(){go(idx+1)});
+  document.getElementById('prev').addEventListener('click',function(){go(idx-1)});
+
+  window.addEventListener('keydown',function(e){
+    if(['ArrowRight','ArrowDown','PageDown',' '].indexOf(e.key)>-1){e.preventDefault();go(idx+1);}
+    else if(['ArrowLeft','ArrowUp','PageUp'].indexOf(e.key)>-1){e.preventDefault();go(idx-1);}
+    else if(e.key==='Home'){go(0);}
+    else if(e.key==='End'){go(slides.length-1);}
+    else if(e.key==='p'||e.key==='P'){window.print();}
+  });
+})();
+</script>
+</body>
+</html>
